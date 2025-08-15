@@ -1,0 +1,569 @@
+/* Reset y configuración básica */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.15) 0%, transparent 50%);
+    z-index: -1;
+    animation: backgroundMove 20s ease-in-out infinite;
+}
+
+@keyframes backgroundMove {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-30px) rotate(1deg); }
+    66% { transform: translateY(30px) rotate(-1deg); }
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2);
+    border-radius: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* Hero Header */
+.hero-header {
+    position: relative;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 30px;
+    overflow: hidden;
+    border-radius: 20px 20px 0 0;
+}
+
+.header-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.flag-colors {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        #d52b1e 0%, #d52b1e 33.33%, 
+        #fce300 33.33%, #fce300 66.66%, 
+        #007934 66.66%, #007934 100%);
+    opacity: 0.8;
+}
+
+.geometric-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px),
+        repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px);
+    animation: patternMove 15s linear infinite;
+}
+
+@keyframes patternMove {
+    0% { transform: translateX(0) translateY(0); }
+    100% { transform: translateX(50px) translateY(50px); }
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+    padding: 40px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.bolivia-emblem {
+    font-size: 3em;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.header-content h1 {
+    color: white;
+    font-size: 2.8em;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    font-weight: 700;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.2em;
+    margin-bottom: 25px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.election-info {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.info-badge {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.info-badge:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.badge-icon {
+    font-size: 1.2em;
+}
+
+/* Formulario */
+.encuesta-form {
+    margin-bottom: 30px;
+    padding: 0 30px;
+}
+
+.seccion {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #fafafa;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+.seccion h2 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+.campo {
+    margin-bottom: 15px;
+}
+
+.campo label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #34495e;
+}
+
+.campo select,
+.campo textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.campo select:focus,
+.campo textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.campo textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Candidatos */
+.candidatos {
+    display: grid;
+    gap: 15px;
+}
+
+.candidato {
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background: white;
+}
+
+.candidato:hover {
+    border-color: #3498db;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    transform: translateY(-2px);
+}
+
+.candidato input[type="radio"] {
+    display: none;
+}
+
+.candidato label {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    gap: 15px;
+}
+
+.candidato input[type="radio"]:checked + label {
+    background-color: #3498db;
+    color: white;
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.4);
+}
+
+.candidato-foto {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #e0e0e0;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+.candidato input[type="radio"]:checked + label .candidato-foto {
+    border-color: white;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.foto-candidato {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.candidato:hover .foto-candidato {
+    transform: scale(1.05);
+}
+
+.voto-especial {
+    font-size: 2.5em;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.candidato input[type="radio"]:checked + label .voto-especial {
+    color: white;
+    transform: scale(1.1);
+}
+
+.candidato-info {
+    flex: 1;
+    text-align: left;
+}
+
+.candidato-info h3 {
+    font-size: 1.3em;
+    margin-bottom: 5px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.candidato-info p {
+    font-size: 0.95em;
+    opacity: 0.85;
+    margin-bottom: 3px;
+    font-weight: 500;
+}
+
+.candidato-info small {
+    font-size: 0.8em;
+    opacity: 0.7;
+    font-style: italic;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Botones */
+.botones {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.btn-enviar,
+.btn-ver-resultados,
+.btn-cerrar {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-enviar {
+    background-color: #27ae60;
+    color: white;
+}
+
+.btn-enviar:hover {
+    background-color: #219a52;
+    transform: translateY(-2px);
+}
+
+.btn-ver-resultados {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-ver-resultados:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.btn-cerrar {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-cerrar:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+/* Resultados */
+.resultados {
+    background-color: #ecf0f1;
+    padding: 30px;
+    border-radius: 8px;
+    margin-top: 30px;
+    border: 2px solid #bdc3c7;
+}
+
+.resultados h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.oculto {
+    display: none;
+}
+
+#estadisticas {
+    margin-bottom: 20px;
+}
+
+.estadistica-item {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.estadistica-candidato {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.estadistica-porcentaje {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.barra-progreso {
+    width: 100%;
+    height: 20px;
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.barra-relleno {
+    height: 100%;
+    background-color: #3498db;
+    transition: width 0.5s ease;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 30px;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    color: #666;
+    font-size: 0.9em;
+    border-radius: 0 0 20px 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+        padding: 0;
+    }
+    
+    .header-content h1 {
+        font-size: 2.2em;
+    }
+    
+    .logo-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .bolivia-emblem {
+        font-size: 2.5em;
+    }
+    
+    .election-info {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .encuesta-form {
+        padding: 0 20px;
+    }
+    
+    .botones {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-enviar,
+    .btn-ver-resultados,
+    .btn-cerrar {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* Animaciones mejoradas */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.seccion {
+    animation: fadeIn 0.8s ease-out;
+}
+
+.seccion:nth-child(even) {
+    animation: slideInLeft 0.8s ease-out;
+}
+
+.candidato {
+    animation: fadeIn 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.candidato:nth-child(1) { animation-delay: 0.1s; }
+.candidato:nth-child(2) { animation-delay: 0.2s; }
+.candidato:nth-child(3) { animation-delay: 0.3s; }
+.candidato:nth-child(4) { animation-delay: 0.4s; }
+.candidato:nth-child(5) { animation-delay: 0.5s; }
+.candidato:nth-child(6) { animation-delay: 0.6s; }
+.candidato:nth-child(7) { animation-delay: 0.7s; }
+.candidato:nth-child(8) { animation-delay: 0.8s; }
+.candidato:nth-child(9) { animation-delay: 0.9s; }
+.candidato:nth-child(10) { animation-delay: 1.0s; }
+
+/* Estados de validación */
+.campo select:invalid,
+.campo textarea:invalid {
+    border-color: #e74c3c;
+}
+
+.campo select:valid,
+.campo textarea:valid {
+    border-color: #27ae60;
+}
+
+/* Mensaje de confirmación */
+.mensaje-exito {
+    background-color: #d5f4e6;
+    color: #27ae60;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #27ae60;
+    text-align: center;
+    font-weight: 600;
+}

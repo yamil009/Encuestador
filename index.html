@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta Electoral Bolivia 2025</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header class="hero-header">
+            <div class="header-background">
+                <div class="flag-colors"></div>
+                <div class="geometric-pattern"></div>
+            </div>
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="bolivia-emblem">🇧🇴</div>
+                    <h1>Encuesta Electoral Bolivia 2025</h1>
+                </div>
+                <p class="subtitle">Tu opinión cuenta para las elecciones presidenciales del 17 de agosto de 2025</p>
+                <div class="election-info">
+                    <div class="info-badge">
+                        <span class="badge-icon">📊</span>
+                        <span>Encuesta Oficial</span>
+                    </div>
+                    <div class="info-badge">
+                        <span class="badge-icon">🗳️</span>
+                        <span>8 Candidatos Habilitados</span>
+                    </div>
+                    <div class="info-badge">
+                        <span class="badge-icon">📅</span>
+                        <span>17 de Agosto 2025</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <form id="encuestaForm" class="encuesta-form">
+                <section class="seccion">
+                    <h2>Información del Recinto Electoral</h2>
+                    <div class="campo">
+                        <label for="recinto">Recinto Electoral:</label>
+                        <select id="recinto" name="recinto" required>
+                            <option value="">Seleccione su recinto</option>
+                            <option value="recinto1">Unidad Educativa Central</option>
+                            <option value="recinto2">Colegio San Andrés</option>
+                            <option value="recinto3">Escuela República de Chile</option>
+                            <option value="recinto4">Instituto Técnico Bolivia</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="seccion">
+                    <h2>Datos Demográficos</h2>
+                    <div class="campo">
+                        <label for="edad">Edad:</label>
+                        <select id="edad" name="edad" required>
+                            <option value="">Seleccione su rango de edad</option>
+                            <option value="18-25">18-25 años</option>
+                            <option value="26-35">26-35 años</option>
+                            <option value="36-45">36-45 años</option>
+                            <option value="46-55">46-55 años</option>
+                            <option value="56+">56+ años</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="genero">Género:</label>
+                        <select id="genero" name="genero" required>
+                            <option value="">Seleccione su género</option>
+                            <option value="masculino">Masculino</option>
+                            <option value="femenino">Femenino</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="educacion">Nivel Educativo:</label>
+                        <select id="educacion" name="educacion" required>
+                            <option value="">Seleccione su nivel educativo</option>
+                            <option value="secundaria">Secundaria</option>
+                            <option value="tecnico">Técnico</option>
+                            <option value="universitario">Universitario</option>
+                            <option value="postgrado">Postgrado</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="seccion">
+                    <h2>Intención de Voto - Candidatos Habilitados 2025</h2>
+                    <div class="candidatos">
+                        <div class="candidato">
+                            <input type="radio" id="candidato1" name="voto" value="candidato1" required>
+                            <label for="candidato1">
+                                <div class="candidato-foto">
+                                    <img src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSSjb-de2eOubcOFx32X9FYnv_eaNYbTYBwPAnQzEifGRi4vKzN"
+                                        alt="Samuel Doria Medina" class="foto-candidato">
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Samuel Doria Medina</h3>
+                                    <p>Unidad Nacional (UN) - Alianza</p>
+                                    <small>VP: José Luis Lupo Flores</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="candidato">
+                            <input type="radio" id="candidato2" name="voto" value="candidato2" required>
+                            <label for="candidato2">
+                                <div class="candidato-foto">
+                                    <img src="https://www.infobae.com/resizer/v2/C2MZCB7IWBF5JK2453HTMNO6L4.jpg?auth=e83fd4519f5c04bd5cfe971368c3d801004c5692ce2906bdb64b5e3b465c703c&smart=true&width=1200&height=1200&quality=85"
+                                        alt="Jorge Tuto Quiroga" class="foto-candidato">
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Jorge "Tuto" Quiroga</h3>
+                                    <p>Libre-Libertad y Democracia</p>
+                                    <small>VP: Juan Pablo Velasco Dalence</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="candidato">
+                            <input type="radio" id="candidato3" name="voto" value="candidato3" required>
+                            <label for="candidato3">
+                                <div class="candidato-foto">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQX1E0JKe5qyUi46ePoMG33et4_dbbbXyYG3qTlgHzRxvJs9CXG886l3Eb4a-cFyvTEn4Q&usqp=CAU"
+                                        alt="Andrónico Rodríguez" class="foto-candidato">
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Andrónico Rodríguez</h3>
+                                    <p>Movimiento Tercer Sistema (MTS)</p>
+                                    <small>VP: Mariana Prado Noya</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="candidato">
+                            <input type="radio" id="candidato4" name="voto" value="candidato4" required>
+                            <label for="candidato4">
+                                <div class="candidato-foto">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWMype6p_hzs5Nlz_cB55jreCvaNosupzr0YgTWeCxYFp03K5ZEKXb6jggjA_Dm4jDNzY&usqp=CAU"
+                                        alt="Manfred Reyes Villa" class="foto-candidato">
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Manfred Reyes Villa</h3>
+                                    <p>Autonomía Para Bolivia-Súmate</p>
+                                    <small>VP: Juan Carlos Medrano Gonzales</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="candidato">
+                            <input type="radio" id="candidato6" name="voto" value="candidato6" required>
+                            <label for="candidato6">
+                                <div class="candidato-foto">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZFcoP-fxW_RqkxZiCZTLysHhKFbYtC7kxJkSjav0sggfnT0D-I0TzeP7mNl6dh5N21yI&usqp=CAU"
+                                        alt="Rodrigo Paz Pereira" class="foto-candidato">
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Rodrigo Paz Pereira</h3>
+                                    <p>Partido Demócrata Cristiano (PDC)</p>
+                                    <small>VP: Edmand Lara Montaño</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="candidato">
+                            <input type="radio" id="candidato7" name="voto" value="candidato7" required>
+                            <label for="candidato7">
+                                <div class="candidato-foto">
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUxW7bLIPYIzxaBeEf55JIOWKJrEqpHaqq8oxAlmY_qZ40gGeEdivMY7LOtA-j14m2YfA&usqp=CAU"
+                                        alt="Eduardo Del Castillo" class="foto-candidato">
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Eduardo Del Castillo</h3>
+                                    <p>MAS-IPSP</p>
+                                    <small>VP: Esteban Milán Ramos</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="candidato">
+                            <input type="radio" id="candidato8" name="voto" value="candidato8" required>
+                            <label for="candidato8">
+                                <div class="candidato-foto">
+                                    <img src="https://estaticos.unitel.bo/binrepository/1201x722/0c0/1200d630/none/246276540/BVBX/noticias-unitel_101-12141688_20250606190019.jpg"
+                                        alt="Pavel Aracena Vargas" class="foto-candidato">
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Pavel Aracena Vargas</h3>
+                                    <p>Acción Democrática Nacionalista (ADN)</p>
+                                    <small>VP: Víctor Hugo Núñez del Prado</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="candidato">
+                            <input type="radio" id="voto_blanco" name="voto" value="voto_blanco" required>
+                            <label for="voto_blanco">
+                                <div class="candidato-foto">
+                                    <div class="voto-especial">📄</div>
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Voto en Blanco</h3>
+                                    <p>No apoyo a ningún candidato</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="candidato">
+                            <input type="radio" id="indeciso" name="voto" value="indeciso" required>
+                            <label for="indeciso">
+                                <div class="candidato-foto">
+                                    <div class="voto-especial">❓</div>
+                                </div>
+                                <div class="candidato-info">
+                                    <h3>Indeciso/a</h3>
+                                    <p>Aún no he decidido mi voto</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="seccion">
+                    <h2>Nivel de Certeza</h2>
+                    <div class="campo">
+                        <label for="certeza">¿Qué tan seguro está de su decisión?</label>
+                        <select id="certeza" name="certeza" required>
+                            <option value="">Seleccione su nivel de certeza</option>
+                            <option value="1">1 - Muy inseguro</option>
+                            <option value="2">2 - Inseguro</option>
+                            <option value="3">3 - Neutral</option>
+                            <option value="4">4 - Seguro</option>
+                            <option value="5">5 - Muy seguro</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="seccion">
+                    <h2>Comentarios (Opcional)</h2>
+                    <div class="campo">
+                        <label for="comentarios">¿Desea agregar algún comentario sobre su decisión electoral?</label>
+                        <textarea id="comentarios" name="comentarios" rows="4"
+                            placeholder="Escriba sus comentarios aquí..."></textarea>
+                    </div>
+                </section>
+
+                <div class="botones">
+                    <button type="submit" class="btn-enviar">Enviar Encuesta</button>
+                    <button type="button" class="btn-ver-resultados" onclick="mostrarResultados()">Ver
+                        Resultados</button>
+                </div>
+            </form>
+        </main>
+
+        <div id="resultados" class="resultados oculto">
+            <h2>Resultados de la Encuesta</h2>
+            <div id="estadisticas"></div>
+            <button onclick="ocultarResultados()" class="btn-cerrar">Cerrar Resultados</button>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Encuesta Electoral Bolivia - Proyecto Académico</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
