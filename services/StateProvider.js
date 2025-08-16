@@ -35,58 +35,38 @@ class ProveedorEstado {
         return esVercel || !tieneBaseDatos;
     }
 
-    // Cargar datos iniciales - siempre desde servidor para sincronización
+    // Cargar datos iniciales - siempre desde SQLite (local directo, Vercel vía API)
     async cargarDatosIniciales() {
         try {
             this.actualizarEstado({ cargando: true, error: null });
             
             if (this.esEntornoVercel()) {
-                // En Vercel: cargar desde servidor (memoria compartida)
-                console.log('Entorno Vercel detectado - cargando desde servidor');
-                try {
-                    const respuesta = await fetch('/api/resultados');
-                    const datos = await respuesta.json();
-                    
-                    if (datos.success && datos.data.resultados) {
-                        // Combinar datos del servidor con candidatos oficiales
-                        if (window.candidatosOficiales) {
-                            const candidatosConDatos = window.candidatosOficiales.map((candidatoOficial, index) => {
-                                const resultadoServidor = datos.data.resultados.find(r => r.id_candidato === (index + 1));
-                                return {
-                                    ...candidatoOficial,
-                                    id_candidato: index + 1,
-                                    cantidad_votos: resultadoServidor ? resultadoServidor.cantidad_votos : 0
-                                };
-                            });
-                            this.estado.candidatos = candidatosConDatos;
-                            this.estado.totalVotos = datos.data.totalVotos || 0;
-                            console.log('Datos cargados desde servidor Vercel:', candidatosConDatos.map(c => ({nombre: c.nombre, votos: c.cantidad_votos})));
-                        }
-                    } else {
-                        throw new Error('Error en respuesta del servidor');
-                    }
-                } catch (error) {
-                    console.warn('Error al cargar desde servidor, usando datos locales:', error);
-                    // Fallback a localStorage solo si falla el servidor
-                    const votosGuardados = this.cargarVotosLocales();
-                    if (votosGuardados && votosGuardados.length > 0) {
-                        this.estado.candidatos = votosGuardados;
-                        this.estado.totalVotos = votosGuardados.reduce((sum, c) => sum + c.cantidad_votos, 0);
-                    } else {
-                        // Inicializar candidatos desde modelo global
-                        if (window.candidatosOficiales) {
-                            this.estado.candidatos = window.candidatosOficiales.map((candidato, index) => ({
-                                ...candidato,
+                // En Vercel: cargar desde SQLite vía API del servidor
+                console.log('Entorno Vercel detectado - cargando desde SQLite vía servidor');
+                const respuesta = await fetch('/api/resultados');
+                const datos = await respuesta.json();
+                
+                if (datos.success && datos.data.resultados) {
+                    // Combinar datos del servidor con candidatos oficiales
+                    if (window.candidatosOficiales) {
+                        const candidatosConDatos = window.candidatosOficiales.map((candidatoOficial, index) => {
+                            const resultadoServidor = datos.data.resultados.find(r => r.id_candidato === (index + 1));
+                            return {
+                                ...candidatoOficial,
                                 id_candidato: index + 1,
-                                cantidad_votos: 0
-                            }));
-                        }
-                        this.estado.totalVotos = 0;
+                                cantidad_votos: resultadoServidor ? resultadoServidor.cantidad_votos : 0
+                            };
+                        });
+                        this.estado.candidatos = candidatosConDatos;
+                        this.estado.totalVotos = datos.data.totalVotos || 0;
+                        console.log('Datos cargados desde SQLite vía servidor:', candidatosConDatos.map(c => ({nombre: c.nombre, votos: c.cantidad_votos})));
                     }
+                } else {
+                    throw new Error('Error en respuesta del servidor SQLite');
                 }
             } else {
-                // En desarrollo local: usar SQLite
-                console.log('Entorno local detectado - usando SQLite');
+                // En desarrollo local: usar SQLite directo
+                console.log('Entorno local detectado - usando SQLite directo');
                 const resultados = await this.servicioBaseDatos.obtenerResultados();
                 const totalVotos = await this.servicioBaseDatos.obtenerTotalVotos();
                 
@@ -96,7 +76,7 @@ class ProveedorEstado {
                         const resultadoBD = resultados.find(r => r.id_candidato === (index + 1));
                         return {
                             ...candidatoOficial,
-                            id_candidato: index + 1, // Asegurar que tenga ID
+                            id_candidato: index + 1,
                             cantidad_votos: resultadoBD ? resultadoBD.cantidad_votos : 0
                         };
                     });
@@ -118,25 +98,6 @@ class ProveedorEstado {
         }
     }
 
-    cargarVotosLocales() {
-        try {
-            const votosString = localStorage.getItem('encuestas2025_votos');
-            if (votosString) {
-                return JSON.parse(votosString);
-            }
-        } catch (error) {
-            console.error('Error al cargar votos locales:', error);
-        }
-        return null;
-    }
-
-    guardarVotosLocales() {
-        try {
-            localStorage.setItem('encuestas2025_votos', JSON.stringify(this.estado.candidatos));
-        } catch (error) {
-            console.error('Error al guardar votos locales:', error);
-        }
-    }
 
     // Registrar un voto
     async registrarVoto(idCandidato) {
@@ -145,8 +106,8 @@ class ProveedorEstado {
             this.actualizarEstado({ cargando: true, error: null });
             
             if (this.esEntornoVercel()) {
-                // En Vercel: enviar al servidor para sincronización
-                console.log('Enviando voto al servidor Vercel - ID:', idCandidato);
+                // En Vercel: enviar al servidor SQLite vía API
+                console.log('Enviando voto a SQLite vía servidor Vercel - ID:', idCandidato);
                 const respuesta = await fetch('/api/votar', {
                     method: 'POST',
                     headers: {
@@ -157,19 +118,19 @@ class ProveedorEstado {
                 
                 const datos = await respuesta.json();
                 if (!datos.success) {
-                    throw new Error(datos.error || 'Error al registrar voto');
+                    throw new Error(datos.error || 'Error al registrar voto en SQLite');
                 }
                 
-                // Recargar datos desde servidor para mantener sincronización
+                // Recargar datos desde SQLite vía servidor
                 await this.cargarDatosIniciales();
                 return;
             } else {
-                // En desarrollo local: usar SQLite
-                console.log('Enviando a SQLite - ID:', idCandidato);
+                // En desarrollo local: usar SQLite directo
+                console.log('Enviando a SQLite directo - ID:', idCandidato);
                 await this.servicioBaseDatos.registrarVoto(idCandidato);
                 // Recargar datos actualizados desde SQLite
                 await this.cargarDatosIniciales();
-                return; // No continuar con el resto del código
+                return;
             }
             
         } catch (error) {
@@ -188,8 +149,8 @@ class ProveedorEstado {
             this.actualizarEstado({ cargando: true, error: null });
             
             if (this.esEntornoVercel()) {
-                // En Vercel: enviar al servidor para sincronización
-                console.log('Reiniciando votos en servidor Vercel');
+                // En Vercel: reiniciar SQLite vía servidor
+                console.log('Reiniciando votos en SQLite vía servidor Vercel');
                 const respuesta = await fetch('/api/reiniciar', {
                     method: 'POST',
                     headers: {
@@ -199,21 +160,18 @@ class ProveedorEstado {
                 
                 const datos = await respuesta.json();
                 if (!datos.success) {
-                    throw new Error(datos.error || 'Error al reiniciar votos');
+                    throw new Error(datos.error || 'Error al reiniciar votos en SQLite');
                 }
                 
-                // Limpiar localStorage como backup
-                localStorage.removeItem('encuestas2025_votos');
-                
-                // Recargar datos desde servidor
+                // Recargar datos desde SQLite vía servidor
                 await this.cargarDatosIniciales();
                 return;
             } else {
-                // En desarrollo local: usar SQLite
+                // En desarrollo local: usar SQLite directo
                 await this.servicioBaseDatos.reiniciarVotos();
                 // Recargar datos desde SQLite
                 await this.cargarDatosIniciales();
-                return; // No continuar con el resto del código
+                return;
             }
             
         } catch (error) {

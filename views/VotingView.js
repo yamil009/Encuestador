@@ -189,7 +189,7 @@ class VistaVotacion {
             await this.proveedor.registrarVoto(idCandidato);
             
             // Mostrar notificación de éxito
-            this.mostrarNotificación('¡Voto registrado exitosamente!', 'success');
+            this.mostrarNotificacion('¡Voto registrado exitosamente!', 'success');
             
         } catch (error) {
             console.error('Error al votar:', error);
