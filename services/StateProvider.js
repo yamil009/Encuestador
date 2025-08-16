@@ -112,7 +112,7 @@ class ProveedorEstado {
             this.actualizarEstado({ cargando: true, error: null });
             
             if (this.esEntornoVercel()) {
-                // En Vercel: enviar al servidor SQLite vía API
+                // En Vercel: enviar al servidor y actualizar estado local
                 console.log('Enviando voto a SQLite vía servidor Vercel - ID:', idCandidato);
                 const respuesta = await fetch('/api/votar', {
                     method: 'POST',
@@ -123,12 +123,22 @@ class ProveedorEstado {
                 });
                 
                 const datos = await respuesta.json();
+                console.log('Respuesta del servidor:', datos);
+                
                 if (!datos.success) {
-                    throw new Error(datos.error || 'Error al registrar voto en SQLite');
+                    throw new Error(datos.error || 'Error al registrar voto');
                 }
                 
-                // Recargar datos desde SQLite vía servidor
-                await this.cargarDatosIniciales();
+                // Actualizar estado local inmediatamente sin recargar
+                const candidato = this.estado.candidatos.find(c => c.id_candidato === parseInt(idCandidato));
+                if (candidato) {
+                    candidato.cantidad_votos++;
+                    this.estado.totalVotos++;
+                    console.log(`Voto actualizado localmente para ${candidato.nombre}: ${candidato.cantidad_votos} votos`);
+                }
+                
+                this.estado.cargando = false;
+                this.notificarSuscriptores();
                 return;
             } else {
                 // En desarrollo local: usar SQLite directo
