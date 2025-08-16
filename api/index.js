@@ -1,19 +1,66 @@
 const express = require('express');
 const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 
 const app = express();
 
-// Almacenamiento en memoria para Vercel (se reinicia en cada deploy)
-let votosEnMemoria = {
-    1: { id_candidato: 1, nombre: 'Jorge Quiroga Ramírez', partido: 'Alianza Libre', cantidad_votos: 0 },
-    2: { id_candidato: 2, nombre: 'Samuel Doria Medina', partido: 'Alianza Unidad', cantidad_votos: 0 },
-    3: { id_candidato: 3, nombre: 'Rodrigo Paz Pereira', partido: 'Partido Demócrata Cristiano', cantidad_votos: 0 },
-    4: { id_candidato: 4, nombre: 'Manfred Reyes Villa', partido: 'APB Súmate', cantidad_votos: 0 },
-    5: { id_candidato: 5, nombre: 'Andrónico Rodríguez', partido: 'Alianza Popular', cantidad_votos: 0 },
-    6: { id_candidato: 6, nombre: 'Jhonny Fernández', partido: 'Unidad Cívica Solidaridad', cantidad_votos: 0 },
-    7: { id_candidato: 7, nombre: 'Eduardo Del Castillo', partido: 'Movimiento al Socialismo', cantidad_votos: 0 },
-    8: { id_candidato: 8, nombre: 'Pavel Aracena Vargas', partido: 'Alianza Libertad y Progreso', cantidad_votos: 0 }
-};
+// Configurar SQLite para Vercel
+const dbPath = path.join('/tmp', 'encuestas2025.db');
+let db;
+
+// Inicializar base de datos SQLite
+function inicializarBaseDatos() {
+    return new Promise((resolve, reject) => {
+        db = new sqlite3.Database(dbPath, (err) => {
+            if (err) {
+                console.error('Error al conectar con SQLite:', err);
+                reject(err);
+                return;
+            }
+            
+            console.log('Conectado a SQLite en:', dbPath);
+            
+            // Crear tabla si no existe
+            db.run(`CREATE TABLE IF NOT EXISTS votos (
+                id_candidato INTEGER PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                partido TEXT NOT NULL,
+                cantidad_votos INTEGER DEFAULT 0
+            )`, (err) => {
+                if (err) {
+                    console.error('Error al crear tabla:', err);
+                    reject(err);
+                    return;
+                }
+                
+                // Insertar candidatos iniciales si no existen
+                const candidatos = [
+                    { id: 1, nombre: 'Jorge Quiroga Ramírez', partido: 'Alianza Libre' },
+                    { id: 2, nombre: 'Samuel Doria Medina', partido: 'Alianza Unidad' },
+                    { id: 3, nombre: 'Rodrigo Paz Pereira', partido: 'Partido Demócrata Cristiano' },
+                    { id: 4, nombre: 'Manfred Reyes Villa', partido: 'APB Súmate' },
+                    { id: 5, nombre: 'Andrónico Rodríguez', partido: 'Alianza Popular' },
+                    { id: 6, nombre: 'Jhonny Fernández', partido: 'Unidad Cívica Solidaridad' },
+                    { id: 7, nombre: 'Eduardo Del Castillo', partido: 'Movimiento al Socialismo' },
+                    { id: 8, nombre: 'Pavel Aracena Vargas', partido: 'Alianza Libertad y Progreso' }
+                ];
+                
+                const stmt = db.prepare(`INSERT OR IGNORE INTO votos (id_candidato, nombre, partido, cantidad_votos) VALUES (?, ?, ?, 0)`);
+                candidatos.forEach(candidato => {
+                    stmt.run(candidato.id, candidato.nombre, candidato.partido);
+                });
+                stmt.finalize();
+                
+                console.log('Base de datos SQLite inicializada correctamente');
+                resolve();
+            });
+        });
+    });
+}
+
+// Inicializar BD al arrancar
+inicializarBaseDatos().catch(console.error);
 
 // Middleware
 app.use(express.json());
@@ -24,12 +71,25 @@ app.use('/services', express.static(path.join(__dirname, '..', 'services')));
 app.use('/views', express.static(path.join(__dirname, '..', 'views')));
 
 // Rutas API
-app.get('/api/candidatos', (req, res) => {
+app.get('/api/candidatos', async (req, res) => {
     try {
-        const resultados = Object.values(votosEnMemoria);
-        res.json({
-            success: true,
-            data: resultados
+        if (!db) {
+            await inicializarBaseDatos();
+        }
+        
+        db.all('SELECT * FROM votos ORDER BY id_candidato', (err, rows) => {
+            if (err) {
+                console.error('Error al obtener candidatos:', err);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error al obtener los candidatos'
+                });
+            }
+            
+            res.json({
+                success: true,
+                data: rows
+            });
         });
     } catch (error) {
         console.error('Error al obtener candidatos:', error);
@@ -40,7 +100,7 @@ app.get('/api/candidatos', (req, res) => {
     }
 });
 
-app.post('/api/votar', (req, res) => {
+app.post('/api/votar', async (req, res) => {
     try {
         const { idCandidato } = req.body;
         
@@ -51,19 +111,34 @@ app.post('/api/votar', (req, res) => {
             });
         }
 
+        if (!db) {
+            await inicializarBaseDatos();
+        }
+
         const id = parseInt(idCandidato);
-        if (votosEnMemoria[id]) {
-            votosEnMemoria[id].cantidad_votos++;
+        
+        db.run('UPDATE votos SET cantidad_votos = cantidad_votos + 1 WHERE id_candidato = ?', [id], function(err) {
+            if (err) {
+                console.error('Error al registrar voto:', err);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error al registrar el voto'
+                });
+            }
+            
+            if (this.changes === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Candidato no encontrado'
+                });
+            }
+            
+            console.log(`Voto registrado para candidato ${id}`);
             res.json({
                 success: true,
                 message: 'Voto registrado exitosamente'
             });
-        } else {
-            res.status(404).json({
-                success: false,
-                error: 'Candidato no encontrado'
-            });
-        }
+        });
     } catch (error) {
         console.error('Error al registrar voto:', error);
         res.status(500).json({
@@ -73,24 +148,39 @@ app.post('/api/votar', (req, res) => {
     }
 });
 
-app.get('/api/resultados', (req, res) => {
+app.get('/api/resultados', async (req, res) => {
     try {
-        const resultados = Object.values(votosEnMemoria);
-        const totalVotos = resultados.reduce((sum, candidato) => sum + candidato.cantidad_votos, 0);
+        if (!db) {
+            await inicializarBaseDatos();
+        }
         
-        const resultadosConPorcentajes = resultados.map(candidato => ({
-            ...candidato,
-            porcentaje: totalVotos > 0 
-                ? ((candidato.cantidad_votos / totalVotos) * 100).toFixed(2)
-                : 0
-        }));
-
-        res.json({
-            success: true,
-            data: {
-                resultados: resultadosConPorcentajes,
-                totalVotos: totalVotos
+        db.all('SELECT * FROM votos ORDER BY id_candidato', (err, rows) => {
+            if (err) {
+                console.error('Error al obtener resultados:', err);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error al obtener los resultados'
+                });
             }
+            
+            const totalVotos = rows.reduce((sum, candidato) => sum + candidato.cantidad_votos, 0);
+            
+            const resultadosConPorcentajes = rows.map(candidato => ({
+                ...candidato,
+                porcentaje: totalVotos > 0 
+                    ? ((candidato.cantidad_votos / totalVotos) * 100).toFixed(2)
+                    : 0
+            }));
+
+            console.log('Resultados desde SQLite:', resultadosConPorcentajes.map(c => ({id: c.id_candidato, votos: c.cantidad_votos})));
+            
+            res.json({
+                success: true,
+                data: {
+                    resultados: resultadosConPorcentajes,
+                    totalVotos: totalVotos
+                }
+            });
         });
     } catch (error) {
         console.error('Error al obtener resultados:', error);
@@ -101,16 +191,27 @@ app.get('/api/resultados', (req, res) => {
     }
 });
 
-app.post('/api/reiniciar', (req, res) => {
+app.post('/api/reiniciar', async (req, res) => {
     try {
-        Object.keys(votosEnMemoria).forEach(id => {
-            votosEnMemoria[id].cantidad_votos = 0;
-        });
+        if (!db) {
+            await inicializarBaseDatos();
+        }
         
-        res.json({
-            success: true,
-            message: 'Votos reiniciados exitosamente',
-            filasAfectadas: Object.keys(votosEnMemoria).length
+        db.run('UPDATE votos SET cantidad_votos = 0', function(err) {
+            if (err) {
+                console.error('Error al reiniciar votos:', err);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error al reiniciar los votos'
+                });
+            }
+            
+            console.log(`Votos reiniciados: ${this.changes} filas afectadas`);
+            res.json({
+                success: true,
+                message: 'Votos reiniciados exitosamente',
+                filasAfectadas: this.changes
+            });
         });
     } catch (error) {
         console.error('Error al reiniciar votos:', error);
