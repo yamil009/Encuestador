@@ -141,15 +141,24 @@ class AdaptadorBaseDatos {
 
     async registrarVoto(idCandidato) {
         try {
+            console.log('AdaptadorBaseDatos.registrarVoto - ID enviado:', idCandidato, 'tipo:', typeof idCandidato);
+            
+            // Asegurar que el ID sea un número entero
+            const idNumerico = parseInt(idCandidato);
+            if (isNaN(idNumerico)) {
+                throw new Error('ID de candidato debe ser un número válido');
+            }
+            
             const respuesta = await fetch('/api/votar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ idCandidato })
+                body: JSON.stringify({ idCandidato: idNumerico })
             });
             
             const datos = await respuesta.json();
+            console.log('Respuesta del servidor:', datos);
             
             if (!datos.success) {
                 throw new Error(datos.error || 'Error al registrar voto');

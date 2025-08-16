@@ -93,7 +93,9 @@ class VistaVotacion {
             `;
         }
 
-        return candidatos.map(candidato => `
+        return candidatos.map(candidato => {
+            console.log('Renderizando candidato:', candidato.nombre, 'ID:', candidato.id_candidato);
+            return `
             <div class="tarjeta-candidato" 
                  style="--color-primario: ${candidato.colorPrimario}; --color-secundario: ${candidato.colorSecundario}">
                 <div class="contenido-candidato">
@@ -118,7 +120,8 @@ class VistaVotacion {
                     <span>Votar</span>
                 </button>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     configurarEventos() {
@@ -126,7 +129,10 @@ class VistaVotacion {
         this.contenedor.addEventListener('click', (e) => {
             const btnVotar = e.target.closest('.btn-votar');
             if (btnVotar && !btnVotar.disabled) {
-                const idCandidato = parseInt(btnVotar.dataset.candidato);
+                const dataCandidato = btnVotar.dataset.candidato;
+                console.log('dataset.candidato raw:', dataCandidato);
+                const idCandidato = parseInt(dataCandidato);
+                console.log('ID parseado:', idCandidato);
                 this.manejarVoto(idCandidato);
                 return;
             }
@@ -169,6 +175,13 @@ class VistaVotacion {
 
     async manejarVoto(idCandidato) {
         try {
+            console.log('Votando por candidato ID:', idCandidato, 'tipo:', typeof idCandidato);
+            
+            // Validar que el ID sea válido
+            if (!idCandidato || isNaN(idCandidato)) {
+                throw new Error('ID de candidato inválido');
+            }
+            
             // Mostrar animación de voto
             this.mostrarAnimacionVoto(idCandidato);
             
@@ -176,7 +189,7 @@ class VistaVotacion {
             await this.proveedor.registrarVoto(idCandidato);
             
             // Mostrar notificación de éxito
-            this.mostrarNotificacion('¡Voto registrado exitosamente!', 'success');
+            this.mostrarNotificación('¡Voto registrado exitosamente!', 'success');
             
         } catch (error) {
             console.error('Error al votar:', error);
@@ -197,12 +210,15 @@ class VistaVotacion {
     }
 
     mostrarAnimacionVoto(idCandidato) {
-        const tarjeta = this.contenedor.querySelector(`[data-candidato="${idCandidato}"]`).closest('.tarjeta-candidato');
-        if (tarjeta) {
-            tarjeta.classList.add('votando');
-            setTimeout(() => {
-                tarjeta.classList.remove('votando');
-            }, 1000);
+        const boton = this.contenedor.querySelector(`[data-candidato="${idCandidato}"]`);
+        if (boton) {
+            const tarjeta = boton.closest('.tarjeta-candidato');
+            if (tarjeta) {
+                tarjeta.classList.add('votando');
+                setTimeout(() => {
+                    tarjeta.classList.remove('votando');
+                }, 1000);
+            }
         }
     }
 

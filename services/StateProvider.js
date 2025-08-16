@@ -18,54 +18,125 @@ class ProveedorEstado {
         this.cargarDatosIniciales();
     }
 
-    // Cargar datos iniciales desde la base de datos
+    // Detectar si estamos en Vercel o desarrollo local
+    esEntornoVercel() {
+        const hostname = window.location.hostname;
+        const esVercel = hostname.includes('vercel.app') || 
+                        hostname.includes('vercel.com');
+        const tieneBaseDatos = this.servicioBaseDatos !== null;
+        
+        console.log('Detección de entorno:', {
+            hostname,
+            esVercel,
+            tieneBaseDatos,
+            usarVercel: esVercel || !tieneBaseDatos
+        });
+        
+        return esVercel || !tieneBaseDatos;
+    }
+
+    // Cargar datos iniciales - SQLite local o localStorage en Vercel
     async cargarDatosIniciales() {
         try {
             this.actualizarEstado({ cargando: true, error: null });
             
-            const resultados = await this.servicioBaseDatos.obtenerResultados();
-            const totalVotos = await this.servicioBaseDatos.obtenerTotalVotos();
+            if (this.esEntornoVercel()) {
+                // En Vercel: usar localStorage
+                console.log('Entorno Vercel detectado - usando localStorage');
+                const votosGuardados = this.cargarVotosLocales();
+                
+                if (votosGuardados && votosGuardados.length > 0) {
+                    this.estado.candidatos = votosGuardados;
+                    this.estado.totalVotos = votosGuardados.reduce((sum, c) => sum + c.cantidad_votos, 0);
+                } else {
+                    // Inicializar candidatos desde modelo global
+                    if (window.candidatosOficiales) {
+                        this.estado.candidatos = window.candidatosOficiales.map(candidato => ({
+                            ...candidato,
+                            cantidad_votos: 0
+                        }));
+                    }
+                    this.estado.totalVotos = 0;
+                }
+            } else {
+                // En desarrollo local: usar SQLite
+                console.log('Entorno local detectado - usando SQLite');
+                const resultados = await this.servicioBaseDatos.obtenerResultados();
+                const totalVotos = await this.servicioBaseDatos.obtenerTotalVotos();
+                
+                // Combinar datos de SQLite con candidatos oficiales para obtener colores y fotos
+                if (window.candidatosOficiales) {
+                    const candidatosConDatos = window.candidatosOficiales.map((candidatoOficial, index) => {
+                        const resultadoBD = resultados.find(r => r.id_candidato === (index + 1));
+                        return {
+                            ...candidatoOficial,
+                            id_candidato: index + 1, // Asegurar que tenga ID
+                            cantidad_votos: resultadoBD ? resultadoBD.cantidad_votos : 0
+                        };
+                    });
+                    this.estado.candidatos = candidatosConDatos;
+                    console.log('Candidatos con datos combinados:', candidatosConDatos.map(c => ({nombre: c.nombre, id: c.id_candidato})));
+                } else {
+                    this.estado.candidatos = resultados;
+                }
+                this.estado.totalVotos = totalVotos;
+            }
             
-            // Usar candidatos oficiales globales para obtener colores
-            const candidatosOficiales = window.candidatosOficiales || [];
-            
-            // Combinar datos de BD con información de candidatos
-            const candidatosConDatos = resultados.map(resultado => {
-                const candidatoOficial = candidatosOficiales.find(c => c.idCandidato === resultado.id_candidato);
-                return {
-                    ...resultado,
-                    colorPrimario: candidatoOficial ? candidatoOficial.colorPrimario : '#3498db',
-                    colorSecundario: candidatoOficial ? candidatoOficial.colorSecundario : '#2980b9',
-                    urlFoto: candidatoOficial ? candidatoOficial.urlFoto : null
-                };
-            });
-
-            this.actualizarEstado({
-                candidatos: candidatosConDatos,
-                totalVotos: totalVotos,
-                cargando: false
-            });
-
+            this.estado.cargando = false;
+            this.notificarSuscriptores();
         } catch (error) {
             console.error('Error al cargar datos iniciales:', error);
-            this.actualizarEstado({
-                error: 'Error al cargar los datos de la aplicación',
-                cargando: false
-            });
+            this.estado.error = 'Error al cargar los datos de la aplicación';
+            this.estado.cargando = false;
+            this.notificarSuscriptores();
+        }
+    }
+
+    cargarVotosLocales() {
+        try {
+            const votosString = localStorage.getItem('encuestas2025_votos');
+            if (votosString) {
+                return JSON.parse(votosString);
+            }
+        } catch (error) {
+            console.error('Error al cargar votos locales:', error);
+        }
+        return null;
+    }
+
+    guardarVotosLocales() {
+        try {
+            localStorage.setItem('encuestas2025_votos', JSON.stringify(this.estado.candidatos));
+        } catch (error) {
+            console.error('Error al guardar votos locales:', error);
         }
     }
 
     // Registrar un voto
     async registrarVoto(idCandidato) {
         try {
+            console.log('StateProvider.registrarVoto - ID recibido:', idCandidato, 'tipo:', typeof idCandidato);
             this.actualizarEstado({ cargando: true, error: null });
             
-            await this.servicioBaseDatos.registrarVoto(idCandidato);
+            if (this.esEntornoVercel()) {
+                // En Vercel: actualizar localStorage
+                const candidato = this.estado.candidatos.find(c => c.id_candidato === idCandidato);
+                if (candidato) {
+                    candidato.cantidad_votos++;
+                    this.estado.totalVotos++;
+                    this.guardarVotosLocales();
+                }
+            } else {
+                // En desarrollo local: usar SQLite
+                console.log('Enviando a SQLite - ID:', idCandidato);
+                await this.servicioBaseDatos.registrarVoto(idCandidato);
+                // Recargar datos actualizados desde SQLite
+                await this.cargarDatosIniciales();
+                return; // No continuar con el resto del código
+            }
             
-            // Recargar datos actualizados
-            await this.cargarDatosIniciales();
-            
-            // Notificar éxito
+            this.estado.cargando = false;
+            this.notificarSuscriptores();
             this.notificarCambio('voto_registrado', { idCandidato });
             
         } catch (error) {
@@ -74,6 +145,7 @@ class ProveedorEstado {
                 error: 'Error al registrar el voto. Inténtalo de nuevo.',
                 cargando: false
             });
+            throw error;
         }
     }
 
@@ -82,12 +154,23 @@ class ProveedorEstado {
         try {
             this.actualizarEstado({ cargando: true, error: null });
             
-            await this.servicioBaseDatos.reiniciarVotos();
+            if (this.esEntornoVercel()) {
+                // En Vercel: limpiar localStorage
+                this.estado.candidatos.forEach(candidato => {
+                    candidato.cantidad_votos = 0;
+                });
+                this.estado.totalVotos = 0;
+                localStorage.removeItem('encuestas2025_votos');
+            } else {
+                // En desarrollo local: usar SQLite
+                await this.servicioBaseDatos.reiniciarVotos();
+                // Recargar datos desde SQLite
+                await this.cargarDatosIniciales();
+                return; // No continuar con el resto del código
+            }
             
-            // Recargar datos
-            await this.cargarDatosIniciales();
-            
-            // Notificar reinicio
+            this.estado.cargando = false;
+            this.notificarSuscriptores();
             this.notificarCambio('votos_reiniciados');
             
         } catch (error) {
