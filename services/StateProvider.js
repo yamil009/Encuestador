@@ -37,12 +37,18 @@ class ProveedorEstado {
 
     // Cargar datos iniciales - siempre desde SQLite (local directo, Vercel vía API)
     async cargarDatosIniciales() {
+        // Evitar cargas múltiples
+        if (this.estado.cargando) {
+            console.log('Ya hay una carga en progreso, omitiendo...');
+            return;
+        }
+        
         try {
             this.actualizarEstado({ cargando: true, error: null });
             
             if (this.esEntornoVercel()) {
-                // En Vercel: cargar desde SQLite vía API del servidor
-                console.log('Entorno Vercel detectado - cargando desde SQLite vía servidor');
+                // En Vercel: cargar desde servidor
+                console.log('Entorno Vercel detectado - cargando desde servidor');
                 const respuesta = await fetch('/api/resultados');
                 const datos = await respuesta.json();
                 
@@ -59,10 +65,10 @@ class ProveedorEstado {
                         });
                         this.estado.candidatos = candidatosConDatos;
                         this.estado.totalVotos = datos.data.totalVotos || 0;
-                        console.log('Datos cargados desde SQLite vía servidor:', candidatosConDatos.map(c => ({nombre: c.nombre, votos: c.cantidad_votos})));
+                        console.log('Datos cargados desde servidor:', candidatosConDatos.map(c => ({nombre: c.nombre, votos: c.cantidad_votos})));
                     }
                 } else {
-                    throw new Error('Error en respuesta del servidor SQLite');
+                    throw new Error('Error en respuesta del servidor');
                 }
             } else {
                 // En desarrollo local: usar SQLite directo
