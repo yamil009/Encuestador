@@ -1,0 +1,29 @@
+{
+  "name": "encuestas2025",
+  "version": "1.0.0",
+  "description": "Aplicación de encuestas electorales Bolivia 2025 con SQLite",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "encuestas",
+    "elecciones",
+    "bolivia",
+    "sqlite",
+    "voting"
+  ],
+  "author": "Proyecto Académico",
+  "license": "MIT",
+  "dependencies": {
+    "sqlite3": "^5.1.6",
+    "express": "^4.18.2",
+    "path": "^0.12.7",
+    "chart.js": "^4.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
