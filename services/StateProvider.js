@@ -51,10 +51,12 @@ class ProveedorEstado {
                 } else {
                     // Inicializar candidatos desde modelo global
                     if (window.candidatosOficiales) {
-                        this.estado.candidatos = window.candidatosOficiales.map(candidato => ({
+                        this.estado.candidatos = window.candidatosOficiales.map((candidato, index) => ({
                             ...candidato,
+                            id_candidato: index + 1, // Asegurar que tenga ID (1-8)
                             cantidad_votos: 0
                         }));
+                        console.log('Candidatos Vercel inicializados:', this.estado.candidatos.map(c => ({nombre: c.nombre, id: c.id_candidato})));
                     }
                     this.estado.totalVotos = 0;
                 }
