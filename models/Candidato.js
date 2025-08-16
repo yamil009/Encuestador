@@ -60,6 +60,16 @@ const candidatosOficiales = [
     new Candidato(8, 'Pavel Aracena Vargas', 'Alianza Libertad y Progreso', '#34495e', '#2c3e50', 'https://estaticos.unitel.bo/binrepository/1201x722/0c0/1200d630/none/246276540/BVBX/noticias-unitel_101-12141688_20250606190019.jpg')
 ];
 
+// Configurar votos iniciales: Total 120 votos
+candidatosOficiales[0].cantidadVotos = 35; // Jorge Quiroga Ramírez - 1°
+candidatosOficiales[1].cantidadVotos = 28; // Samuel Doria Medina - 2°
+candidatosOficiales[2].cantidadVotos = 22; // Rodrigo Paz Pereira - 3°
+candidatosOficiales[3].cantidadVotos = 15; // Manfred Reyes Villa - 4°
+candidatosOficiales[4].cantidadVotos = 8;  // Andrónico Rodríguez - 5°
+candidatosOficiales[5].cantidadVotos = 6;  // Jhonny Fernández - 6°
+candidatosOficiales[6].cantidadVotos = 4;  // Eduardo Del Castillo - 7°
+candidatosOficiales[7].cantidadVotos = 2;  // Pavel Aracena Vargas - 8°
+
 // Exportar para uso en Node.js o navegador
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { Candidato, candidatosOficiales };

@@ -3,53 +3,17 @@ const path = require('path');
 
 const app = express();
 
-// Almacenamiento persistente en memoria para Vercel con inicialización desde archivo
-let votosEnMemoria = {};
-let inicializado = false;
-
-// Inicializar datos base
-function inicializarDatos() {
-    if (!inicializado) {
-        console.log('Inicializando datos de candidatos...');
-        
-        // Intentar cargar desde variable de entorno o inicializar
-        const datosGuardados = process.env.VOTOS_DATA;
-        if (datosGuardados) {
-            try {
-                votosEnMemoria = JSON.parse(datosGuardados);
-                console.log('Datos cargados desde variable de entorno');
-            } catch (error) {
-                console.log('Error al cargar datos guardados, inicializando nuevos');
-                inicializarCandidatos();
-            }
-        } else {
-            inicializarCandidatos();
-        }
-        
-        inicializado = true;
-    }
-}
-
-function inicializarCandidatos() {
-    votosEnMemoria = {
-        1: { id_candidato: 1, nombre: 'Jorge Quiroga Ramírez', partido: 'Alianza Libre', cantidad_votos: 0 },
-        2: { id_candidato: 2, nombre: 'Samuel Doria Medina', partido: 'Alianza Unidad', cantidad_votos: 0 },
-        3: { id_candidato: 3, nombre: 'Rodrigo Paz Pereira', partido: 'Partido Demócrata Cristiano', cantidad_votos: 0 },
-        4: { id_candidato: 4, nombre: 'Manfred Reyes Villa', partido: 'APB Súmate', cantidad_votos: 0 },
-        5: { id_candidato: 5, nombre: 'Andrónico Rodríguez', partido: 'Alianza Popular', cantidad_votos: 0 },
-        6: { id_candidato: 6, nombre: 'Jhonny Fernández', partido: 'Unidad Cívica Solidaridad', cantidad_votos: 0 },
-        7: { id_candidato: 7, nombre: 'Eduardo Del Castillo', partido: 'Movimiento al Socialismo', cantidad_votos: 0 },
-        8: { id_candidato: 8, nombre: 'Pavel Aracena Vargas', partido: 'Alianza Libertad y Progreso', cantidad_votos: 0 }
-    };
-    console.log('Candidatos inicializados con 0 votos');
-}
-
-// Función para guardar datos (simular persistencia)
-function guardarDatos() {
-    // En un entorno real, aquí guardarías en una base de datos externa
-    // Por ahora, los datos persisten durante la sesión del contenedor
-    console.log('Datos guardados en memoria:', Object.values(votosEnMemoria).map(c => ({id: c.id_candidato, votos: c.cantidad_votos})));
-}
+// Para Vercel serverless: usar solo estructura de datos, persistencia en cliente
+const candidatosBase = {
+    1: { id_candidato: 1, nombre: 'Jorge Quiroga Ramírez', partido: 'Alianza Libre', cantidad_votos: 0 },
+    2: { id_candidato: 2, nombre: 'Samuel Doria Medina', partido: 'Alianza Unidad', cantidad_votos: 0 },
+    3: { id_candidato: 3, nombre: 'Rodrigo Paz Pereira', partido: 'Partido Demócrata Cristiano', cantidad_votos: 0 },
+    4: { id_candidato: 4, nombre: 'Manfred Reyes Villa', partido: 'APB Súmate', cantidad_votos: 0 },
+    5: { id_candidato: 5, nombre: 'Andrónico Rodríguez', partido: 'Alianza Popular', cantidad_votos: 0 },
+    6: { id_candidato: 6, nombre: 'Jhonny Fernández', partido: 'Unidad Cívica Solidaridad', cantidad_votos: 0 },
+    7: { id_candidato: 7, nombre: 'Eduardo Del Castillo', partido: 'Movimiento al Socialismo', cantidad_votos: 0 },
+    8: { id_candidato: 8, nombre: 'Pavel Aracena Vargas', partido: 'Alianza Libertad y Progreso', cantidad_votos: 0 }
+};
 
 // Middleware
 app.use(express.json());

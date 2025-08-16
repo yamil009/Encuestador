@@ -141,11 +141,20 @@ class ProveedorEstado {
                 this.notificarSuscriptores();
                 return;
             } else {
-                // En desarrollo local: usar SQLite directo
+                // En desarrollo local: usar SQLite directo y actualizar estado local
                 console.log('Enviando a SQLite directo - ID:', idCandidato);
                 await this.servicioBaseDatos.registrarVoto(idCandidato);
-                // Recargar datos actualizados desde SQLite
-                await this.cargarDatosIniciales();
+                
+                // Actualizar estado local inmediatamente sin recargar
+                const candidato = this.estado.candidatos.find(c => c.id_candidato === parseInt(idCandidato));
+                if (candidato) {
+                    candidato.cantidad_votos++;
+                    this.estado.totalVotos++;
+                    console.log(`Voto actualizado localmente para ${candidato.nombre}: ${candidato.cantidad_votos} votos`);
+                }
+                
+                this.estado.cargando = false;
+                this.notificarSuscriptores();
                 return;
             }
             
