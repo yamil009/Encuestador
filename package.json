@@ -1,5 +1,5 @@
 {
-  "name": "Encuestas2025",
+  "name": "encuestas2025",
   "version": "1.0.0",
   "description": "Aplicación de encuestas electorales Bolivia 2025 con SQLite",
   "main": "index.js",
