@@ -5,7 +5,6 @@ class ServicioBaseDatos {
     constructor() {
         this.rutaBaseDatos = path.join(__dirname, '..', 'encuestas2025.db');
         this.db = null;
-        this.inicializar();
     }
 
     // Inicializar la base de datos
@@ -47,30 +46,66 @@ class ServicioBaseDatos {
         });
     }
 
-    // Inicializar candidatos en la base de datos
+    // Inicializar candidatos en la base de datos con votos predefinidos
     inicializarCandidatos() {
         const { candidatosOficiales } = require('../models/Candidato');
         
         return new Promise((resolve, reject) => {
-            const sqlInsertar = `
-                INSERT OR IGNORE INTO votos (id_candidato, nombre, partido, cantidad_votos)
-                VALUES (?, ?, ?, 0)
-            `;
-
-            const stmt = this.db.prepare(sqlInsertar);
-            
-            candidatosOficiales.forEach(candidato => {
-                stmt.run([candidato.idCandidato, candidato.nombre, candidato.partido]);
-            });
-
-            stmt.finalize((err) => {
+            // Primero verificar si ya existen registros en la tabla
+            this.db.get("SELECT COUNT(*) as count FROM votos", [], (err, row) => {
                 if (err) {
-                    console.error('Error al inicializar candidatos:', err.message);
-                    reject(err);
-                } else {
-                    console.log('Candidatos inicializados en la base de datos.');
-                    resolve();
+                    console.error('Error al verificar votos existentes:', err);
+                    return reject(err);
                 }
+                
+                // Si ya existen registros, no hacer nada
+                if (row.count > 0) {
+                    console.log('Candidatos ya inicializados en la base de datos. Registros existentes:', row.count);
+                    return resolve();
+                }
+                
+                // Si no hay registros, insertarlos con los votos iniciales predefinidos directamente en el código
+                console.log('Inicializando candidatos con votos predefinidos en la base de datos...');
+                
+                const sqlInsertar = `
+                    INSERT OR REPLACE INTO votos (id_candidato, nombre, partido, cantidad_votos)
+                    VALUES (?, ?, ?, ?)
+                `;
+                
+                const stmt = this.db.prepare(sqlInsertar);
+                
+                // Configuración de votos iniciales: Total 120 votos
+                const votosIniciales = {
+                    1: 35, // Jorge Quiroga Ramírez - 1°
+                    2: 28, // Samuel Doria Medina - 2°
+                    3: 22, // Rodrigo Paz Pereira - 3°
+                    4: 15, // Manfred Reyes Villa - 4°
+                    5: 8,  // Andrónico Rodríguez - 5°
+                    6: 6,  // Jhonny Fernández - 6°
+                    7: 4,  // Eduardo Del Castillo - 7°
+                    8: 2   // Pavel Aracena Vargas - 8°
+                };
+                
+                // Insertar candidatos con sus votos iniciales
+                candidatosOficiales.forEach(candidato => {
+                    const votosInicial = votosIniciales[candidato.idCandidato] || 0;
+                    stmt.run([
+                        candidato.idCandidato, 
+                        candidato.nombre, 
+                        candidato.partido, 
+                        votosInicial
+                    ]);
+                });
+                
+                stmt.finalize((err) => {
+                    if (err) {
+                        console.error('Error al inicializar candidatos:', err.message);
+                        reject(err);
+                    } else {
+                        console.log('Candidatos inicializados en la base de datos con votos predefinidos.');
+                        resolve();
+                    }
+                });
             });
         });
     }

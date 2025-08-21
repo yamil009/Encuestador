@@ -1,19 +1,9 @@
 const express = require('express');
 const path = require('path');
+const ServicioBaseDatos = require('../services/DatabaseService');
 
 const app = express();
-
-// Para Vercel serverless: usar solo estructura de datos, persistencia en cliente
-const candidatosBase = {
-    1: { id_candidato: 1, nombre: 'Jorge Quiroga Ramírez', partido: 'Alianza Libre', cantidad_votos: 0 },
-    2: { id_candidato: 2, nombre: 'Samuel Doria Medina', partido: 'Alianza Unidad', cantidad_votos: 0 },
-    3: { id_candidato: 3, nombre: 'Rodrigo Paz Pereira', partido: 'Partido Demócrata Cristiano', cantidad_votos: 0 },
-    4: { id_candidato: 4, nombre: 'Manfred Reyes Villa', partido: 'APB Súmate', cantidad_votos: 0 },
-    5: { id_candidato: 5, nombre: 'Andrónico Rodríguez', partido: 'Alianza Popular', cantidad_votos: 0 },
-    6: { id_candidato: 6, nombre: 'Jhonny Fernández', partido: 'Unidad Cívica Solidaridad', cantidad_votos: 0 },
-    7: { id_candidato: 7, nombre: 'Eduardo Del Castillo', partido: 'Movimiento al Socialismo', cantidad_votos: 0 },
-    8: { id_candidato: 8, nombre: 'Pavel Aracena Vargas', partido: 'Alianza Libertad y Progreso', cantidad_votos: 0 }
-};
+const db = new ServicioBaseDatos();
 
 // Middleware
 app.use(express.json());
@@ -24,10 +14,9 @@ app.use('/services', express.static(path.join(__dirname, '..', 'services')));
 app.use('/views', express.static(path.join(__dirname, '..', 'views')));
 
 // Rutas API
-app.get('/api/candidatos', (req, res) => {
+app.get('/api/candidatos', async (req, res) => {
     try {
-        inicializarDatos();
-        const resultados = Object.values(votosEnMemoria);
+        const resultados = await db.obtenerResultados();
         res.json({
             success: true,
             data: resultados
@@ -41,9 +30,8 @@ app.get('/api/candidatos', (req, res) => {
     }
 });
 
-app.post('/api/votar', (req, res) => {
+app.post('/api/votar', async (req, res) => {
     try {
-        inicializarDatos();
         const { idCandidato } = req.body;
         
         if (!idCandidato || isNaN(idCandidato)) {
@@ -54,19 +42,23 @@ app.post('/api/votar', (req, res) => {
         }
 
         const id = parseInt(idCandidato);
-        if (votosEnMemoria[id]) {
-            votosEnMemoria[id].cantidad_votos++;
-            guardarDatos();
-            console.log(`Voto registrado para candidato ${id}, total: ${votosEnMemoria[id].cantidad_votos}`);
+        
+        try {
+            await db.registrarVoto(id);
+            console.log(`Voto registrado para candidato ${id}`);
             res.json({
                 success: true,
                 message: 'Voto registrado exitosamente'
             });
-        } else {
-            res.status(404).json({
-                success: false,
-                error: 'Candidato no encontrado'
-            });
+        } catch (err) {
+            if (err.message.includes('no encontrado')) {
+                res.status(404).json({
+                    success: false,
+                    error: 'Candidato no encontrado'
+                });
+            } else {
+                throw err;
+            }
         }
     } catch (error) {
         console.error('Error al registrar voto:', error);
@@ -77,11 +69,10 @@ app.post('/api/votar', (req, res) => {
     }
 });
 
-app.get('/api/resultados', (req, res) => {
+app.get('/api/resultados', async (req, res) => {
     try {
-        inicializarDatos();
-        const resultados = Object.values(votosEnMemoria);
-        const totalVotos = resultados.reduce((sum, candidato) => sum + candidato.cantidad_votos, 0);
+        const resultados = await db.obtenerResultados();
+        const totalVotos = await db.obtenerTotalVotos();
         
         const resultadosConPorcentajes = resultados.map(candidato => ({
             ...candidato,
@@ -108,19 +99,15 @@ app.get('/api/resultados', (req, res) => {
     }
 });
 
-app.post('/api/reiniciar', (req, res) => {
+app.post('/api/reiniciar', async (req, res) => {
     try {
-        inicializarDatos();
-        Object.keys(votosEnMemoria).forEach(id => {
-            votosEnMemoria[id].cantidad_votos = 0;
-        });
-        guardarDatos();
+        const filasAfectadas = await db.reiniciarVotos();
         
         console.log('Votos reiniciados exitosamente');
         res.json({
             success: true,
             message: 'Votos reiniciados exitosamente',
-            filasAfectadas: Object.keys(votosEnMemoria).length
+            filasAfectadas: filasAfectadas
         });
     } catch (error) {
         console.error('Error al reiniciar votos:', error);

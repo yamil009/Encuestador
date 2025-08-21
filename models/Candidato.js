@@ -4,26 +4,9 @@ class Candidato {
         this.idCandidato = idCandidato;
         this.nombre = nombre;
         this.partido = partido;
-        this.cantidadVotos = 0;
         this.colorPrimario = colorPrimario;
         this.colorSecundario = colorSecundario;
         this.urlFoto = urlFoto;
-    }
-
-    // Obtener porcentaje de votos
-    obtenerPorcentaje(totalVotos) {
-        if (totalVotos === 0) return 0;
-        return ((this.cantidadVotos / totalVotos) * 100).toFixed(2);
-    }
-
-    // Incrementar votos
-    incrementarVotos() {
-        this.cantidadVotos++;
-    }
-
-    // Reiniciar votos
-    reiniciarVotos() {
-        this.cantidadVotos = 0;
     }
 
     // Convertir a objeto para la base de datos
@@ -31,8 +14,7 @@ class Candidato {
         return {
             id_candidato: this.idCandidato,
             nombre: this.nombre,
-            partido: this.partido,
-            cantidad_votos: this.cantidadVotos
+            partido: this.partido
         };
     }
 
@@ -43,7 +25,6 @@ class Candidato {
             data.nombre,
             data.partido
         );
-        candidato.cantidadVotos = data.cantidad_votos || 0;
         return candidato;
     }
 }
@@ -60,15 +41,7 @@ const candidatosOficiales = [
     new Candidato(8, 'Pavel Aracena Vargas', 'Alianza Libertad y Progreso', '#34495e', '#2c3e50', 'https://estaticos.unitel.bo/binrepository/1201x722/0c0/1200d630/none/246276540/BVBX/noticias-unitel_101-12141688_20250606190019.jpg')
 ];
 
-// Configurar votos iniciales: Total 120 votos
-candidatosOficiales[0].cantidadVotos = 35; // Jorge Quiroga Ramírez - 1°
-candidatosOficiales[1].cantidadVotos = 28; // Samuel Doria Medina - 2°
-candidatosOficiales[2].cantidadVotos = 22; // Rodrigo Paz Pereira - 3°
-candidatosOficiales[3].cantidadVotos = 15; // Manfred Reyes Villa - 4°
-candidatosOficiales[4].cantidadVotos = 8;  // Andrónico Rodríguez - 5°
-candidatosOficiales[5].cantidadVotos = 6;  // Jhonny Fernández - 6°
-candidatosOficiales[6].cantidadVotos = 4;  // Eduardo Del Castillo - 7°
-candidatosOficiales[7].cantidadVotos = 2;  // Pavel Aracena Vargas - 8°
+// Los votos se leen exclusivamente desde la base de datos SQLite
 
 // Exportar para uso en Node.js o navegador
 if (typeof module !== 'undefined' && module.exports) {

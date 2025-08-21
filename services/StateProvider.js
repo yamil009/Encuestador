@@ -18,24 +18,7 @@ class ProveedorEstado {
         this.cargarDatosIniciales();
     }
 
-    // Detectar si estamos en Vercel o desarrollo local
-    esEntornoVercel() {
-        const hostname = window.location.hostname;
-        const esVercel = hostname.includes('vercel.app') || 
-                        hostname.includes('vercel.com');
-        const tieneBaseDatos = this.servicioBaseDatos !== null;
-        
-        console.log('Detección de entorno:', {
-            hostname,
-            esVercel,
-            tieneBaseDatos,
-            usarVercel: esVercel || !tieneBaseDatos
-        });
-        
-        return esVercel || !tieneBaseDatos;
-    }
-
-    // Cargar datos iniciales - siempre desde SQLite (local directo, Vercel vía API)
+    // Cargar datos iniciales - siempre desde SQLite
     async cargarDatosIniciales() {
         // Evitar cargas múltiples
         if (this.estado.cargando) {
@@ -46,53 +29,26 @@ class ProveedorEstado {
         try {
             this.actualizarEstado({ cargando: true, error: null });
             
-            if (this.esEntornoVercel()) {
-                // En Vercel: cargar desde servidor
-                console.log('Entorno Vercel detectado - cargando desde servidor');
-                const respuesta = await fetch('/api/resultados');
-                const datos = await respuesta.json();
-                
-                if (datos.success && datos.data.resultados) {
-                    // Combinar datos del servidor con candidatos oficiales
-                    if (window.candidatosOficiales) {
-                        const candidatosConDatos = window.candidatosOficiales.map((candidatoOficial, index) => {
-                            const resultadoServidor = datos.data.resultados.find(r => r.id_candidato === (index + 1));
-                            return {
-                                ...candidatoOficial,
-                                id_candidato: index + 1,
-                                cantidad_votos: resultadoServidor ? resultadoServidor.cantidad_votos : 0
-                            };
-                        });
-                        this.estado.candidatos = candidatosConDatos;
-                        this.estado.totalVotos = datos.data.totalVotos || 0;
-                        console.log('Datos cargados desde servidor:', candidatosConDatos.map(c => ({nombre: c.nombre, votos: c.cantidad_votos})));
-                    }
-                } else {
-                    throw new Error('Error en respuesta del servidor');
-                }
+            console.log('Cargando datos desde SQLite');
+            const resultados = await this.servicioBaseDatos.obtenerResultados();
+            const totalVotos = await this.servicioBaseDatos.obtenerTotalVotos();
+            
+            // Combinar datos de SQLite con candidatos oficiales para obtener colores y fotos
+            if (window.candidatosOficiales) {
+                const candidatosConDatos = window.candidatosOficiales.map((candidatoOficial, index) => {
+                    const resultadoBD = resultados.find(r => r.id_candidato === (index + 1));
+                    return {
+                        ...candidatoOficial,
+                        id_candidato: index + 1,
+                        cantidad_votos: resultadoBD ? resultadoBD.cantidad_votos : 0
+                    };
+                });
+                this.estado.candidatos = candidatosConDatos;
+                console.log('Candidatos con datos combinados:', candidatosConDatos.map(c => ({nombre: c.nombre, id: c.id_candidato, votos: c.cantidad_votos})));
             } else {
-                // En desarrollo local: usar SQLite directo
-                console.log('Entorno local detectado - usando SQLite directo');
-                const resultados = await this.servicioBaseDatos.obtenerResultados();
-                const totalVotos = await this.servicioBaseDatos.obtenerTotalVotos();
-                
-                // Combinar datos de SQLite con candidatos oficiales para obtener colores y fotos
-                if (window.candidatosOficiales) {
-                    const candidatosConDatos = window.candidatosOficiales.map((candidatoOficial, index) => {
-                        const resultadoBD = resultados.find(r => r.id_candidato === (index + 1));
-                        return {
-                            ...candidatoOficial,
-                            id_candidato: index + 1,
-                            cantidad_votos: resultadoBD ? resultadoBD.cantidad_votos : 0
-                        };
-                    });
-                    this.estado.candidatos = candidatosConDatos;
-                    console.log('Candidatos con datos combinados:', candidatosConDatos.map(c => ({nombre: c.nombre, id: c.id_candidato})));
-                } else {
-                    this.estado.candidatos = resultados;
-                }
-                this.estado.totalVotos = totalVotos;
+                this.estado.candidatos = resultados;
             }
+            this.estado.totalVotos = totalVotos;
             
             this.estado.cargando = false;
             this.notificarSuscriptores();
@@ -104,59 +60,27 @@ class ProveedorEstado {
         }
     }
 
-
     // Registrar un voto
     async registrarVoto(idCandidato) {
         try {
             console.log('StateProvider.registrarVoto - ID recibido:', idCandidato, 'tipo:', typeof idCandidato);
             this.actualizarEstado({ cargando: true, error: null });
             
-            if (this.esEntornoVercel()) {
-                // En Vercel: enviar al servidor y actualizar estado local
-                console.log('Enviando voto a SQLite vía servidor Vercel - ID:', idCandidato);
-                const respuesta = await fetch('/api/votar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ idCandidato: parseInt(idCandidato) })
-                });
-                
-                const datos = await respuesta.json();
-                console.log('Respuesta del servidor:', datos);
-                
-                if (!datos.success) {
-                    throw new Error(datos.error || 'Error al registrar voto');
-                }
-                
-                // Actualizar estado local inmediatamente sin recargar
-                const candidato = this.estado.candidatos.find(c => c.id_candidato === parseInt(idCandidato));
-                if (candidato) {
-                    candidato.cantidad_votos++;
-                    this.estado.totalVotos++;
-                    console.log(`Voto actualizado localmente para ${candidato.nombre}: ${candidato.cantidad_votos} votos`);
-                }
-                
-                this.estado.cargando = false;
-                this.notificarSuscriptores();
-                return;
-            } else {
-                // En desarrollo local: usar SQLite directo y actualizar estado local
-                console.log('Enviando a SQLite directo - ID:', idCandidato);
-                await this.servicioBaseDatos.registrarVoto(idCandidato);
-                
-                // Actualizar estado local inmediatamente sin recargar
-                const candidato = this.estado.candidatos.find(c => c.id_candidato === parseInt(idCandidato));
-                if (candidato) {
-                    candidato.cantidad_votos++;
-                    this.estado.totalVotos++;
-                    console.log(`Voto actualizado localmente para ${candidato.nombre}: ${candidato.cantidad_votos} votos`);
-                }
-                
-                this.estado.cargando = false;
-                this.notificarSuscriptores();
-                return;
+            // Usar SQLite directo para registrar el voto
+            console.log('Registrando voto en SQLite - ID:', idCandidato);
+            await this.servicioBaseDatos.registrarVoto(idCandidato);
+            
+            // Actualizar estado local inmediatamente sin recargar
+            const candidato = this.estado.candidatos.find(c => c.id_candidato === parseInt(idCandidato));
+            if (candidato) {
+                candidato.cantidad_votos++;
+                this.estado.totalVotos++;
+                console.log(`Voto actualizado localmente para ${candidato.nombre}: ${candidato.cantidad_votos} votos`);
             }
+            
+            this.estado.cargando = false;
+            this.notificarSuscriptores();
+            return;
             
         } catch (error) {
             console.error('Error al registrar voto:', error);
@@ -173,31 +97,12 @@ class ProveedorEstado {
         try {
             this.actualizarEstado({ cargando: true, error: null });
             
-            if (this.esEntornoVercel()) {
-                // En Vercel: reiniciar SQLite vía servidor
-                console.log('Reiniciando votos en SQLite vía servidor Vercel');
-                const respuesta = await fetch('/api/reiniciar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-                
-                const datos = await respuesta.json();
-                if (!datos.success) {
-                    throw new Error(datos.error || 'Error al reiniciar votos en SQLite');
-                }
-                
-                // Recargar datos desde SQLite vía servidor
-                await this.cargarDatosIniciales();
-                return;
-            } else {
-                // En desarrollo local: usar SQLite directo
-                await this.servicioBaseDatos.reiniciarVotos();
-                // Recargar datos desde SQLite
-                await this.cargarDatosIniciales();
-                return;
-            }
+            // Usar SQLite para reiniciar los votos
+            await this.servicioBaseDatos.reiniciarVotos();
+            
+            // Recargar datos actualizados desde SQLite
+            await this.cargarDatosIniciales();
+            return;
             
         } catch (error) {
             console.error('Error al reiniciar votos:', error);
