@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Electoral 2025</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Dashboard Electoral 2025</h1>
+            <p>Resultados de las Elecciones Nacionales</p>
+        </header>
+
+        <main class="dashboard">
+            <!-- Card 1: Información General -->
+            <div class="card" id="info-general">
+                <div class="card-header">
+                    <h2>📊 Información General de las Elecciones 2025</h2>
+                </div>
+                <div class="card-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-mesas">-</div>
+                            <div class="stat-label">Total de Mesas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-inscritos">-</div>
+                            <div class="stat-label">Inscritos Habilitados</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-votos">-</div>
+                            <div class="stat-label">Votos Emitidos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="participacion">-%</div>
+                            <div class="stat-label">Participación</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-departamentos">-</div>
+                            <div class="stat-label">Departamentos</div>
+                        </div>
+                    </div>
+                    <div class="loading" id="loading-general">Cargando información general...</div>
+                </div>
+            </div>
+
+            <!-- Card 2: Resultados Nacionales -->
+            <div class="card" id="resultados-nacionales">
+                <div class="card-header">
+                    <h2>🏆 Resultados Nacionales</h2>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" data-chart="bar">Barras</button>
+                        <button class="chart-btn" data-chart="pie">Circular</button>
+                        <button class="chart-btn" data-chart="doughnut">Dona</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="resultados-chart"></canvas>
+                    </div>
+                    <div class="results-table">
+                        <table id="resultados-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidato</th>
+                                    <th>Votos</th>
+                                    <th>Porcentaje</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="loading" id="loading-resultados">Cargando resultados nacionales...</div>
+                </div>
+            </div>
+
+            <!-- Card 3: Recinto Electoral Específico -->
+            <div class="card" id="recinto-especifico">
+                <div class="card-header">
+                    <h2>🗳️ Recinto Electoral Específico</h2>
+                </div>
+                <div class="card-content">
+                    <div class="selector-container">
+                        <div class="selector-group">
+                            <label for="departamento-select">Departamento:</label>
+                            <select id="departamento-select">
+                                <option value="">Seleccionar departamento...</option>
+                            </select>
+                        </div>
+                        <div class="selector-group">
+                            <label for="municipio-select">Municipio:</label>
+                            <select id="municipio-select" disabled>
+                                <option value="">Seleccionar municipio...</option>
+                            </select>
+                        </div>
+                        <div class="selector-group">
+                            <label for="recinto-select">Recinto:</label>
+                            <select id="recinto-select" disabled>
+                                <option value="">Seleccionar recinto...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="recinto-info" id="recinto-info" style="display: none;">
+                        <div class="recinto-header">
+                            <h3 id="recinto-nombre">-</h3>
+                            <p id="recinto-ubicacion">-</p>
+                        </div>
+                        <div class="recinto-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="recinto-mesas">-</div>
+                                <div class="stat-label">Mesas</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="recinto-inscritos">-</div>
+                                <div class="stat-label">Inscritos</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="recinto-votos">-</div>
+                                <div class="stat-label">Votos</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="recinto-participacion">-%</div>
+                                <div class="stat-label">Participación</div>
+                            </div>
+                        </div>
+                        <div class="recinto-chart">
+                            <canvas id="recinto-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="loading" id="loading-recinto" style="display: none;">Cargando datos del recinto...</div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 Dashboard Electoral - Elecciones Nacionales</p>
+        </footer>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
