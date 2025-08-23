@@ -9,3 +9,10 @@
 3. **Elaborar el informe de la encuesta realizada**, enviarlo hasta el sábado 16 de agosto a las 23:00 horas.
 
 4. **Contrastar este informe** con los resultados reales obtenidos en este recinto electoral, por cada uno de los candidatos.
+
+
+# Rutas
+
+http://localhost:3000
+
+http://localhost:3000/dashboard

@@ -182,14 +182,29 @@ app.get('/api/dashboard/resultados-nacionales', async (req, res) => {
             .on('end', () => {
                 // Sumar votos por candidato a nivel nacional
                 const candidatos = {};
+                const nombresCandidatos = {
+                    1: 'AP',
+                    2: 'LYP ADN',
+                    3: 'APB SÚMATE',
+                    4: 'Vacío',
+                    5: 'LIBRE',
+                    6: 'FP',
+                    7: 'MAS-IPSP',
+                    8: 'MORENA',
+                    9: 'UNIDAD',
+                    10: 'PDC'
+                };
+                
                 for (let i = 1; i <= 12; i++) {
-                    candidatos[`Candidato ${i}`] = 0;
+                    const nombre = nombresCandidatos[i] || `Candidato ${i}`;
+                    candidatos[nombre] = 0;
                 }
                 
                 results.forEach(row => {
                     for (let i = 1; i <= 12; i++) {
                         const votos = parseInt(row[`Voto${i}`] || 0);
-                        candidatos[`Candidato ${i}`] += votos;
+                        const nombre = nombresCandidatos[i] || `Candidato ${i}`;
+                        candidatos[nombre] += votos;
                     }
                 });
                 
@@ -251,8 +266,22 @@ app.get('/api/dashboard/recinto/:departamento/:municipio/:recinto', async (req, 
                 
                 // Sumar votos por candidato en este recinto
                 const candidatos = {};
+                const nombresCandidatos = {
+                    1: 'AP',
+                    2: 'LYP ADN',
+                    3: 'APB SÚMATE',
+                    4: 'Vacío',
+                    5: 'LIBRE',
+                    6: 'FP',
+                    7: 'MAS-IPSP',
+                    8: 'MORENA',
+                    9: 'UNIDAD',
+                    10: 'PDC'
+                };
+                
                 for (let i = 1; i <= 12; i++) {
-                    candidatos[`Candidato ${i}`] = 0;
+                    const nombre = nombresCandidatos[i] || `Candidato ${i}`;
+                    candidatos[nombre] = 0;
                 }
                 
                 let totalInscritos = 0;
@@ -264,7 +293,8 @@ app.get('/api/dashboard/recinto/:departamento/:municipio/:recinto', async (req, 
                     
                     for (let i = 1; i <= 12; i++) {
                         const votos = parseInt(row[`Voto${i}`] || 0);
-                        candidatos[`Candidato ${i}`] += votos;
+                        const nombre = nombresCandidatos[i] || `Candidato ${i}`;
+                        candidatos[nombre] += votos;
                     }
                 });
                 
